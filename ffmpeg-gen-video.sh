@@ -7,10 +7,10 @@
 
 workDir=$(pwd)
 echo "workDir=${workDir}" 
-restore_srt_punctuationPy=/home/abner/abner2/zdev/ai/av/story-video-maker/edge_restore_srt_punctuation.py
+restore_srt_punctuationPy=/home/abner/abner2/zdev/ai/av/a-story-video-maker/edge_restore_srt_punctuation.py
 
-inTxt=${workDir}/old-dog.txt
-videoTitle="黑狗报恩"
+inTxt=${workDir}/story.txt
+videoTitle="镜影迷踪"
 outVideo1="${workDir}/outVideo1.mp4"
 
 
@@ -82,8 +82,9 @@ ffmpeg -loop 1 -i image1.png -i story_male_cn.mp3 -i story_male_cn.srt \
 ffmpeg -loop 1 -i "$image_pattern" -i "$midFile_mp3" -i "$midFile_srt1" \
   -c:v libx264 -pix_fmt yuv420p -c:a aac -b:a 192k \
   -vf "subtitles=$midFile_srt1:\
-        force_style='Fontname=SimHei,Fontsize=70,PrimaryColour=&HFFFFFF&,Outline=1,Shadow=1'" \
+        force_style='Fontname=SimHei,Fontsize=30,PrimaryColour=&HFFFFFF&,Outline=1,Shadow=1'" \
   -shortest "$midFile_video"
+
 
 ffplay -i midFile_video1.mp4 -vf "drawtext=fontsize=50:fontfile=FreeSerif.ttf:text='风波鬼是':fontcolor=green:x=400:y=200:box=1:boxcolor=yellow"
 
@@ -91,16 +92,16 @@ ffmpeg -framerate 1/10 -i "$image_pattern" -i "$midFile_mp3" -i "$midFile_srt1" 
   -c:v libx264 -pix_fmt yuv420p -c:a aac -b:a 192k \
   -vf subtitles="$midFile_srt1" -shortest "$midFile_video"
 fi
-# ++++++++++++++++++++multiLine-comments....end
+# ++++++++++++++++++++multiLine-comments....end 
 
-# ffmpeg -loop 1 -i "$image_pattern" -i "$midFile_mp3" -i "$midFile_srt1" \
-#   -c:v libx264 -pix_fmt yuv420p -c:a aac -b:a 192k \
-#   -vf subtitles="$midFile_srt1" -shortest "$midFile_video"
 ffmpeg -loop 1 -i "$image_pattern" -i "$midFile_mp3" -i "$midFile_srt1" \
-  -c:v libx264 -pix_fmt yuv420p -c:a aac -b:a 192k \
-  -vf "subtitles=$midFile_srt1:\
-        force_style='Fontname=SimHei,Fontsize=30,PrimaryColour=&HFFFFFF&,Outline=1,Shadow=1'" \
-  -shortest "$midFile_video"
+  -c:v libx264 -s 1920x1080 -pix_fmt yuv420p -c:a aac -b:a 192k \
+  -vf "scale=1920:1080:\
+       force_original_aspect_ratio=decrease,\
+       pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,\
+       subtitles=$midFile_srt1:\
+       force_style='Fontname=SimHei,Fontsize=30,PrimaryColour=&HFFFFFF&,Outline=2,Shadow=1.5'" \
+  -shortest "$midFile_video"  
 
 # 检查命令执行结果
 if [ $? -eq 0 ]; then
