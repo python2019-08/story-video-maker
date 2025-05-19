@@ -7,8 +7,12 @@
 
 workDir=$(pwd)
 echo "workDir=${workDir}" 
-inTxt=${workDir}/old-dog.txt
 restore_srt_punctuationPy=/home/abner/abner2/zdev/ai/av/story-video-maker/edge_restore_srt_punctuation.py
+
+inTxt=${workDir}/old-dog.txt
+videoTitle="黑狗报恩"
+outVideo1="${workDir}/outVideo1.mp4"
+
 
 midFile_mp3=${workDir}/story_male_cn.mp3
 # subtitles_file 
@@ -59,57 +63,63 @@ image_pattern="${workDir}/cover.png"
 # subtitles_file="subtitles.srt"
 
 # 输出文件
-outVideo="${workDir}/outVideo.mp4"
+midFile_video="${workDir}/outVideo.mp4"
+
 
 # 生成视频
 # ++++++++++++++++++++multiLine-comments....start
 if false; then
 ffmpeg -framerate 1/10 -i "image%d.png" -i "story_male_cn.mp3" -i "story_male_cn.srt" \
   -c:v libx264 -pix_fmt yuv420p -c:a aac -b:a 192k \
-  -vf subtitles="story_male_cn.srt" -shortest "$outVideo"
+  -vf subtitles="story_male_cn.srt" -shortest "$midFile_video"
 
 
 ffmpeg -loop 1 -i image1.png -i story_male_cn.mp3 -i story_male_cn.srt \
 -c:v libx264 -tune stillimage -c:a aac -b:a 192k -pix_fmt yuv420p \
--vf subtitles=story_male_cn.srt -shortest outVideo.mp4  
+-vf subtitles=story_male_cn.srt -shortest midFile_video.mp4  
 
 
 ffmpeg -loop 1 -i "$image_pattern" -i "$midFile_mp3" -i "$midFile_srt1" \
   -c:v libx264 -pix_fmt yuv420p -c:a aac -b:a 192k \
   -vf "subtitles=$midFile_srt1:\
         force_style='Fontname=SimHei,Fontsize=70,PrimaryColour=&HFFFFFF&,Outline=1,Shadow=1'" \
-  -shortest "$outVideo"
+  -shortest "$midFile_video"
 
-ffplay -i outVideo1.mp4 -vf "drawtext=fontsize=50:fontfile=FreeSerif.ttf:text='风波鬼是':fontcolor=green:x=400:y=200:box=1:boxcolor=yellow"
+ffplay -i midFile_video1.mp4 -vf "drawtext=fontsize=50:fontfile=FreeSerif.ttf:text='风波鬼是':fontcolor=green:x=400:y=200:box=1:boxcolor=yellow"
 
 ffmpeg -framerate 1/10 -i "$image_pattern" -i "$midFile_mp3" -i "$midFile_srt1" \
   -c:v libx264 -pix_fmt yuv420p -c:a aac -b:a 192k \
-  -vf subtitles="$midFile_srt1" -shortest "$outVideo"
+  -vf subtitles="$midFile_srt1" -shortest "$midFile_video"
 fi
 # ++++++++++++++++++++multiLine-comments....end
 
 # ffmpeg -loop 1 -i "$image_pattern" -i "$midFile_mp3" -i "$midFile_srt1" \
 #   -c:v libx264 -pix_fmt yuv420p -c:a aac -b:a 192k \
-#   -vf subtitles="$midFile_srt1" -shortest "$outVideo"
+#   -vf subtitles="$midFile_srt1" -shortest "$midFile_video"
 ffmpeg -loop 1 -i "$image_pattern" -i "$midFile_mp3" -i "$midFile_srt1" \
   -c:v libx264 -pix_fmt yuv420p -c:a aac -b:a 192k \
   -vf "subtitles=$midFile_srt1:\
         force_style='Fontname=SimHei,Fontsize=30,PrimaryColour=&HFFFFFF&,Outline=1,Shadow=1'" \
-  -shortest "$outVideo"
+  -shortest "$midFile_video"
 
 # 检查命令执行结果
 if [ $? -eq 0 ]; then
-    echo "视频生成成功！输出文件: $outVideo"
+    echo "视频生成成功！输出文件: $midFile_video"
 else
     echo "视频生成失败，请检查输入文件和命令参数。"
 fi    
 
-videoTitle="嫁衣风波"
-outVideo1="${workDir}/outVideo1.mp4"
-ffmpeg -i ${outVideo} -vf "drawtext=fontsize=100:\
+
+ffmpeg -i ${midFile_video} -vf "drawtext=fontsize=100:\
             fontfile=FreeSerif.ttf:\
             text='${videoTitle}':\
             fontcolor=green:\
             box=1:\
             boxcolor=yellow" \
             -c:v libx264 -crf 23 -preset medium -c:a copy ${outVideo1}
+
+# --------clean 
+rm  ${midFile_mp3} 
+rm  ${midFile_srt} 
+rm  ${midFile_srt1}   
+rm  ${midFile_video}    
