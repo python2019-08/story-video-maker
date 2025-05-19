@@ -10,7 +10,7 @@ echo "workDir=${workDir}"
 restore_srt_punctuationPy=/home/abner/abner2/zdev/ai/av/a-story-video-maker/edge_restore_srt_punctuation.py
 
 inTxt=${workDir}/story.txt
-videoTitle="镜影迷踪"
+videoTitle="嫁衣风波诡事"
 outVideo1="${workDir}/outVideo1.mp4"
 
 
@@ -100,7 +100,7 @@ ffmpeg -loop 1 -i "$image_pattern" -i "$midFile_mp3" -i "$midFile_srt1" \
        force_original_aspect_ratio=decrease,\
        pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,\
        subtitles=$midFile_srt1:\
-       force_style='Fontname=SimHei,Fontsize=30,PrimaryColour=&HFFFFFF&,Outline=2,Shadow=1.5'" \
+       force_style='Fontname=SimHei,Fontsize=28,PrimaryColour=&HFFFFFF&,Outline=2,Shadow=1.5'" \
   -shortest "$midFile_video"  
 
 # 检查命令执行结果
