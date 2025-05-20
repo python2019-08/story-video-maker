@@ -11,7 +11,7 @@ restore_srt_punctuationPy=/home/abner/abner2/zdev/ai/av/a-story-video-maker/edge
 resize_imgPy=/home/abner/abner2/zdev/ai/av/a-story-video-maker/resize_img.py
 
 inTxt=${workDir}/story.txt
-videoTitle="网坟奇闻"
+videoTitle="屏幕背后的窥影"
 outVideo1="${workDir}/outVideo1.mp4"
 
 
@@ -28,9 +28,11 @@ echo "1.midFile_mp3=${midFile_mp3}"
 echo "2.midFile_srt=${midFile_srt}"
 echo "3.midFile_wav=${midFile_wav}"
  
+# output start time 
+date
 
 echo "1.---------edge-tts--------------"
-# edge-tts --voice zh-CN-YunxiNeural --file ./edge-tts-input-demo-fragment.txt --write-media male_cn_frag.mp3
+# edge-tts --voice zh-CN-YunxiNeural --file ./in.txt --write-media midfile_male_cn.mp3 --write-subtitles ${midFile_srt}
 edge-tts --voice zh-CN-YunxiNeural --file ${inTxt} --write-media  ${midFile_mp3} --write-subtitles ${midFile_srt}
 if [ $? -eq 0 ]; then
     echo "edge-tts 成功！输出文件: ${midFile_mp3} +++ $midFile_srt"
@@ -39,7 +41,7 @@ else
     exit 111
 fi    
 
-
+echo "1.1---------restore_srt_punctuationPy--------------"
 python ${restore_srt_punctuationPy} --input-srt ${midFile_srt} --original-text ${inTxt} --output-srt ${midFile_srt1} 
 if [ $? -eq 0 ]; then
     echo "edge_restore_srt_punctuation 成功！输出文件: midFile_srt1=${midFile_srt1}"
@@ -57,26 +59,52 @@ else
     exit 111
 fi    
 
-echo "2.1---------generate midFile_wav_srt--------------"
+echo "2.1---------generate midFile_whisper_srt--------------"
 # "-osrt" can generate midFile_whisper_srt ,in which the sentence breaks well,
 # but **wrong letters** are also generated.
 whisper_cpp_rootDir=/mnt/disk2/abner/zdev/ai/av/whisper.cpp
-${whisper_cpp_rootDir}/build/bin/whisper-cli   -l zh  \
+${whisper_cpp_rootDir}/build/bin/whisper-cli  -l zh  \
         -m  ${whisper_cpp_rootDir}/models/ggml-medium.bin  \
         -f  ${midFile_wav} \
+        --prompt  "以下是普通话的句子，这是一段会议记录。"\
         -osrt > ${midFile_whisper_subtitles}
 
+if [ $? -eq 0 ]; then
+    echo "generate midFile_whisper_srt 成功！输出文件: ${midFile_whisper_srt} "
+else
+    echo "generate midFile_whisper_srt 失败。"
+    exit 111
+fi 
+
+ 
 # +++++++++++ gen video +++++++++++
 echo "3.---------gen video--------------"
 # 输入文件相关信息
 # image_pattern="${workDir}/image%d.png"
-image_pattern="${workDir}/cover.jpeg"
-# audio_file="audio.mp3"
-# subtitles_file="subtitles.srt"
+image_pattern=""
+coverImgList=("${workDir}/cover.png"  
+               "$workDir"/cover.jpeg
+               "$workDir"/cover.jpg )
+for imgItem in "${coverImgList[@]}" 
+do
+  # echo "imgItem=${imgItem}"  
+  if [ -f "$imgItem" ]; then
+    image_pattern=${imgItem}  
+  fi
+done
+echo "image_pattern=${image_pattern}"
+if [ -z "$image_pattern" ]; then
+    echo "cover image is not exist"
+    exit 112
+fi
+ 
+
+
 
 # 输出文件
 midFile_video="${workDir}/outVideo.mp4"
 
+echo "3.1---------resize_img--------------"
 python ${resize_imgPy} --input ${image_pattern}  --output ${image_pattern}
 # 生成视频
 # ++++++++++++++++++++multiLine-comments....start
@@ -105,7 +133,7 @@ ffmpeg -framerate 1/10 -i "$image_pattern" -i "$midFile_mp3" -i "$midFile_srt1" 
   -vf subtitles="$midFile_srt1" -shortest "$midFile_video"
 fi
 # ++++++++++++++++++++multiLine-comments....end 
-echo "3.1---------gen midFile_video--------------"
+echo "3.2---------gen midFile_video--------------"
 ffmpeg -loop 1 -i "$image_pattern" -i "$midFile_mp3" -i "$midFile_whisper_srt" \
   -c:v libx264 -s 1920x1080 -pix_fmt yuv420p -c:a aac -b:a 192k \
   -vf "scale=1920:1080:\
@@ -122,7 +150,7 @@ else
     echo "视频生成失败，请检查输入文件和命令参数。"
 fi    
 
-echo "3.2---------add watermark to video--------------"
+echo "3.3---------add watermark to video--------------"
 ffmpeg -i ${midFile_video} -vf "drawtext=fontsize=100:\
             fontfile=FreeSerif.ttf:\
             text='${videoTitle}':\
@@ -134,8 +162,12 @@ ffmpeg -i ${midFile_video} -vf "drawtext=fontsize=100:\
 echo "4---------clean midfiles--------------"
 # --------clean 
 rm  ${midFile_mp3} 
+rm  ${midFile_wav}
 rm  ${midFile_srt} 
 rm  ${midFile_srt1} 
 rm  ${midFile_whisper_srt}
 rm  ${midFile_whisper_subtitles}  
 rm  ${midFile_video}    
+
+# output end time
+date

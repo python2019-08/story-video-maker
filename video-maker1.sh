@@ -8,6 +8,7 @@
 workDir=$(pwd)
 echo "workDir=${workDir}" 
 restore_srt_punctuationPy=/home/abner/abner2/zdev/ai/av/a-story-video-maker/edge_restore_srt_punctuation.py
+resize_imgPy=/home/abner/abner2/zdev/ai/av/a-story-video-maker/resize_img.py
 
 inTxt=${workDir}/story.txt
 videoTitle="嫁衣风波诡事"
@@ -24,7 +25,9 @@ echo "0.inTxt=${inTxt}"
 echo "1.midFile_mp3=${midFile_mp3}"
 echo "2.midFile_srt=${midFile_srt}"
 echo "3.midFile_wav=${midFile_wav}"
- 
+
+# output start time
+date 
 
 echo "1.---------edge-tts--------------"
 # edge-tts --voice zh-CN-YunxiNeural --file ./edge-tts-input-demo-fragment.txt --write-media male_cn_frag.mp3
@@ -36,7 +39,7 @@ else
     exit 111
 fi    
 
-
+echo "1.1---------restore_srt_punctuationPy--------------"
 python ${restore_srt_punctuationPy} --input-srt ${midFile_srt} --original-text ${inTxt} --output-srt ${midFile_srt1} 
 if [ $? -eq 0 ]; then
     echo "edge_restore_srt_punctuation 成功！输出文件: midFile_srt1=${midFile_srt1}"
@@ -44,18 +47,10 @@ else
     echo "edge_restore_srt_punctuation  失败。"
     exit 112
 fi    
-
-# echo "2.---------mp3 to wav--------------"
-# ffmpeg -i ${midFile_mp3} -ar 16000 -ac 1 -c:a pcm_s16le ${midFile_wav}
-# if [ $? -eq 0 ]; then
-#     echo "mp3-to-wav 成功！输出文件: ${midFile_wav} "
-# else
-#     echo "mp3-to-wav  失败。"
-#     exit 111
-# fi    
+ 
 
 # +++++++++++ gen video +++++++++++
-echo "3.---------gen video--------------"
+echo "2.---------gen video--------------"
 # 输入文件相关信息
 # image_pattern="${workDir}/image%d.png"
 image_pattern="${workDir}/cover.png"
@@ -65,7 +60,8 @@ image_pattern="${workDir}/cover.png"
 # 输出文件
 midFile_video="${workDir}/outVideo.mp4"
 
-
+echo "2.1---------resize_img--------------"
+python ${resize_imgPy} --input ${image_pattern}  --output ${image_pattern}
 # 生成视频
 # ++++++++++++++++++++multiLine-comments....start
 if false; then
@@ -93,7 +89,7 @@ ffmpeg -framerate 1/10 -i "$image_pattern" -i "$midFile_mp3" -i "$midFile_srt1" 
   -vf subtitles="$midFile_srt1" -shortest "$midFile_video"
 fi
 # ++++++++++++++++++++multiLine-comments....end 
-
+echo "2.2---------gen midFile_video--------------"
 ffmpeg -loop 1 -i "$image_pattern" -i "$midFile_mp3" -i "$midFile_srt1" \
   -c:v libx264 -s 1920x1080 -pix_fmt yuv420p -c:a aac -b:a 192k \
   -vf "scale=1920:1080:\
@@ -110,7 +106,7 @@ else
     echo "视频生成失败，请检查输入文件和命令参数。"
 fi    
 
-
+echo "2.3---------add titile watermark to video--------------"
 ffmpeg -i ${midFile_video} -vf "drawtext=fontsize=100:\
             fontfile=FreeSerif.ttf:\
             text='${videoTitle}':\
@@ -118,9 +114,12 @@ ffmpeg -i ${midFile_video} -vf "drawtext=fontsize=100:\
             box=1:\
             boxcolor=yellow" \
             -c:v libx264 -crf 23 -preset medium -c:a copy ${outVideo1}
-
+echo "3---------clean midfiles--------------"
 # --------clean 
-rm  ${midFile_mp3} 
+rm  ${midFile_mp3}  
 rm  ${midFile_srt} 
 rm  ${midFile_srt1}   
 rm  ${midFile_video}    
+
+# output end time
+date
