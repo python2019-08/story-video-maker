@@ -57,7 +57,9 @@ else
     exit 111
 fi    
 
-echo "2.1---------generate midFile_whisper_subtitles--------------"
+echo "2.1---------generate midFile_wav_srt--------------"
+# "-osrt" can generate midFile_whisper_srt ,in which the sentence breaks well,
+# but **wrong letters** are also generated.
 whisper_cpp_rootDir=/mnt/disk2/abner/zdev/ai/av/whisper.cpp
 ${whisper_cpp_rootDir}/build/bin/whisper-cli   -l zh  \
         -m  ${whisper_cpp_rootDir}/models/ggml-medium.bin  \
