@@ -4,16 +4,21 @@
 #   echo "---$1"
 # fi 
 
-
+startTime=$(date)
 workDir=$(pwd)
 echo "workDir=${workDir}" 
+
+
 restore_srt_punctuationPy=/home/abner/abner2/zdev/ai/av/a-story-video-maker/edge_restore_srt_punctuation.py
 resize_imgPy=/home/abner/abner2/zdev/ai/av/a-story-video-maker/resize_img.py
 
 inTxt=${workDir}/story.txt
 videoTitle="屏幕背后的窥影"
-outVideo1="${workDir}/outVideo1.mp4"
-
+# cover.png
+bgImageBaseName="cover"
+outVideo0="${workDir}/outVideo0.mp4"
+# outVideo1="${workDir}/outVideo1.mp4"
+ 
 
 midFile_mp3=${workDir}/story_male_cn.mp3
 # subtitles_file 
@@ -28,8 +33,6 @@ echo "1.midFile_mp3=${midFile_mp3}"
 echo "2.midFile_srt=${midFile_srt}"
 echo "3.midFile_wav=${midFile_wav}"
  
-# output start time 
-date
 
 echo "1.---------edge-tts--------------"
 # edge-tts --voice zh-CN-YunxiNeural --file ./in.txt --write-media midfile_male_cn.mp3 --write-subtitles ${midFile_srt}
@@ -82,10 +85,10 @@ echo "3.---------gen video--------------"
 # 输入文件相关信息
 # image_pattern="${workDir}/image%d.png"
 image_pattern=""
-coverImgList=("${workDir}/cover.png"  
-               "$workDir"/cover.jpeg
-               "$workDir"/cover.jpg )
-for imgItem in "${coverImgList[@]}" 
+bgImgList=("${workDir}/${bgImageBaseName}.png"  
+               "${workDir}/${bgImageBaseName}.jpeg"
+               "${workDir}"/${bgImageBaseName}.jpg )
+for imgItem in "${bgImgList[@]}" 
 do
   # echo "imgItem=${imgItem}"  
   if [ -f "$imgItem" ]; then
@@ -98,11 +101,7 @@ if [ -z "$image_pattern" ]; then
     exit 112
 fi
  
-
-
-
-# 输出文件
-midFile_video="${workDir}/outVideo.mp4"
+ 
 
 echo "3.1---------resize_img--------------"
 python ${resize_imgPy} --input ${image_pattern}  --output ${image_pattern}
@@ -111,53 +110,48 @@ python ${resize_imgPy} --input ${image_pattern}  --output ${image_pattern}
 if false; then
 ffmpeg -framerate 1/10 -i "image%d.png" -i "story_male_cn.mp3" -i "story_male_cn.srt" \
   -c:v libx264 -pix_fmt yuv420p -c:a aac -b:a 192k \
-  -vf subtitles="story_male_cn.srt" -shortest "$midFile_video"
-
-
+  -vf subtitles="story_male_cn.srt" -shortest "$outVideo0"
+# 
 ffmpeg -loop 1 -i image1.png -i story_male_cn.mp3 -i story_male_cn.srt \
 -c:v libx264 -tune stillimage -c:a aac -b:a 192k -pix_fmt yuv420p \
--vf subtitles=story_male_cn.srt -shortest midFile_video.mp4  
-
-
+-vf subtitles=story_male_cn.srt -shortest outVideo0.mp4  
+# 
 ffmpeg -loop 1 -i "$image_pattern" -i "$midFile_mp3" -i "$midFile_srt1" \
   -c:v libx264 -pix_fmt yuv420p -c:a aac -b:a 192k \
   -vf "subtitles=$midFile_srt1:\
         force_style='Fontname=SimHei,Fontsize=30,PrimaryColour=&HFFFFFF&,Outline=1,Shadow=1'" \
-  -shortest "$midFile_video"
-
-
-ffplay -i midFile_video1.mp4 -vf "drawtext=fontsize=50:fontfile=FreeSerif.ttf:text='风波鬼是':fontcolor=green:x=400:y=200:box=1:boxcolor=yellow"
-
+  -shortest "$outVideo0"
+# 
 ffmpeg -framerate 1/10 -i "$image_pattern" -i "$midFile_mp3" -i "$midFile_srt1" \
   -c:v libx264 -pix_fmt yuv420p -c:a aac -b:a 192k \
-  -vf subtitles="$midFile_srt1" -shortest "$midFile_video"
+  -vf subtitles="$midFile_srt1" -shortest "$outVideo0"
 fi
 # ++++++++++++++++++++multiLine-comments....end 
-echo "3.2---------gen midFile_video--------------"
+echo "3.2---------gen outVideo0--------------"
 ffmpeg -loop 1 -i "$image_pattern" -i "$midFile_mp3" -i "$midFile_whisper_srt" \
   -c:v libx264 -s 1920x1080 -pix_fmt yuv420p -c:a aac -b:a 192k \
   -vf "scale=1920:1080:\
        force_original_aspect_ratio=decrease,\
        pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,\
+       drawtext=fontsize=100:\
+            fontfile=FreeSerif.ttf:text='${videoTitle}':\
+            fontcolor=green:box=1:boxcolor=yellow,\
        subtitles=$midFile_whisper_srt:\
        force_style='Fontname=SimHei,Fontsize=28,PrimaryColour=&HFFFFFF&,Outline=2,Shadow=1.5'" \
-  -shortest "$midFile_video"  
+  -shortest "$outVideo0"  
 
 # 检查命令执行结果
 if [ $? -eq 0 ]; then
-    echo "视频生成成功！输出文件: $midFile_video"
+    echo "视频生成成功！输出文件: $outVideo0"
 else
     echo "视频生成失败，请检查输入文件和命令参数。"
 fi    
 
-echo "3.3---------add watermark to video--------------"
-ffmpeg -i ${midFile_video} -vf "drawtext=fontsize=100:\
-            fontfile=FreeSerif.ttf:\
-            text='${videoTitle}':\
-            fontcolor=green:\
-            box=1:\
-            boxcolor=yellow" \
-            -c:v libx264 -crf 23 -preset medium -c:a copy ${outVideo1}
+# echo "3.3---------add watermark to video--------------"
+# ffmpeg -i ${outVideo0} -vf "drawtext=fontsize=100:\
+#             fontfile=FreeSerif.ttf:text='${videoTitle}':\
+#             fontcolor=green:box=1:boxcolor=yellow" \
+#             -c:v libx264 -crf 23 -preset medium -c:a copy ${outVideo1}
 
 echo "4---------clean midfiles--------------"
 # --------clean 
@@ -167,7 +161,8 @@ rm  ${midFile_srt}
 rm  ${midFile_srt1} 
 rm  ${midFile_whisper_srt}
 rm  ${midFile_whisper_subtitles}  
-rm  ${midFile_video}    
+ 
 
 # output end time
-date
+echo "startTime= ${startTime}"
+echo "endTime= $(date)"
