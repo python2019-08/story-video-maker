@@ -5,5 +5,7 @@
 
 <!-- # 3.去掉 图的 水印   -->
 
-# 4. a-story-video-maker/03-yudeng-duying$ ../ffmpeg-gen-video.sh 
+# 4.  
+    cd  a-story-video-maker/out-example/02-xx/ 
+    ../../gen-video2.sh 
 
