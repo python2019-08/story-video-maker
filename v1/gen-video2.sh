@@ -5,28 +5,30 @@
 # fi 
 
 startTime=$(date)
-workDir=$(pwd)
-echo "workDir=${workDir}" 
 
+#   cd v1dat-example/02-xx/  
+datDir=$(pwd)
+echo "datDir=${datDir}" 
 
-restore_srt_punctuationPy=/home/abner/abner2/zdev/ai/av/a-story-video-maker/edge_restore_srt_punctuation.py
-resize_imgPy=/home/abner/abner2/zdev/ai/av/a-story-video-maker/resize_img.py
+codeDir=/home/abner/abner2/zdev/ai/av/a-story-video-maker/v1
+restore_srt_punctuationPy=${codeDir}/edge_restore_srt_punctuation.py
+resize_imgPy=${codeDir}/resize_img.py
 
-inTxt=${workDir}/story.txt
+inTxt=${datDir}/story.txt
 videoTitle="屏幕背后的窥影"
 # cover.png
 bgImageBaseName="cover"
-outVideo0="${workDir}/outVideo0.mp4"
-# outVideo1="${workDir}/outVideo1.mp4"
+outVideo0="${datDir}/outVideo0.mp4"
+# outVideo1="${datDir}/outVideo1.mp4"
  
 
-midFile_mp3=${workDir}/story_male_cn.mp3
+midFile_mp3=${datDir}/story_male_cn.mp3
 # subtitles_file 
-midFile_srt=${workDir}/story_male_cn.srt
-midFile_srt1=${workDir}/story_male_cn1.srt
-midFile_wav=${workDir}/story_male_cn.wav
+midFile_srt=${datDir}/story_male_cn.srt
+midFile_srt1=${datDir}/story_male_cn1.srt
+midFile_wav=${datDir}/story_male_cn.wav
 midFile_whisper_srt=${midFile_wav}.srt
-midFile_whisper_subtitles=${workDir}/story_male_cn__whisper_subtitles.txt
+midFile_whisper_subtitles=${datDir}/story_male_cn__whisper_subtitles.txt
 
 echo "0.inTxt=${inTxt}"
 echo "1.midFile_mp3=${midFile_mp3}"
@@ -36,7 +38,9 @@ echo "3.midFile_wav=${midFile_wav}"
 
 echo "1.---------edge-tts--------------"
 # edge-tts --voice zh-CN-YunxiNeural --file ./in.txt --write-media midfile_male_cn.mp3 --write-subtitles ${midFile_srt}
-edge-tts --voice zh-CN-YunxiNeural --file ${inTxt} --write-media  ${midFile_mp3} --write-subtitles ${midFile_srt}
+edge-tts --voice zh-CN-YunxiNeural --file ${inTxt} \
+         --write-media  ${midFile_mp3} \
+         --write-subtitles ${midFile_srt}
 if [ $? -eq 0 ]; then
     echo "edge-tts 成功！输出文件: ${midFile_mp3} +++ $midFile_srt"
 else
@@ -45,7 +49,10 @@ else
 fi    
 
 echo "1.1---------restore_srt_punctuationPy--------------"
-python ${restore_srt_punctuationPy} --input-srt ${midFile_srt} --original-text ${inTxt} --output-srt ${midFile_srt1} 
+python ${restore_srt_punctuationPy} \
+    --input-srt ${midFile_srt} \
+    --original-text ${inTxt} \
+    --output-srt ${midFile_srt1} 
 if [ $? -eq 0 ]; then
     echo "edge_restore_srt_punctuation 成功！输出文件: midFile_srt1=${midFile_srt1}"
 else
@@ -83,11 +90,11 @@ fi
 # +++++++++++ gen video +++++++++++
 echo "3.---------gen video--------------"
 # 输入文件相关信息
-# image_pattern="${workDir}/image%d.png"
+# image_pattern="${datDir}/image%d.png"
 image_pattern=""
-bgImgList=("${workDir}/${bgImageBaseName}.png"  
-               "${workDir}/${bgImageBaseName}.jpeg"
-               "${workDir}"/${bgImageBaseName}.jpg )
+bgImgList=("${datDir}/${bgImageBaseName}.png"  
+               "${datDir}/${bgImageBaseName}.jpeg"
+               "${datDir}"/${bgImageBaseName}.jpg )
 for imgItem in "${bgImgList[@]}" 
 do
   # echo "imgItem=${imgItem}"  

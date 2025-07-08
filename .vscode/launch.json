@@ -1,0 +1,19 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [ 
+        {
+            "name": "Python: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": [
+                "--in-scenes-txt", "/home/abner/abner2/zdev/ai/av/a-story-video-maker/v2dat/01-huhua-xiaoshenyi/scenes-txt.txt",
+                "--out-dir","/home/abner/abner2/zdev/ai/av/a-story-video-maker/v2dat/01-huhua-xiaoshenyi/out",               
+            ]
+        }
+    ]
+}
