@@ -20,7 +20,7 @@ if [ "$isStepFinished_split_scenes" = "false" ]; then
 fi            
 
 #-----------create_video_4_scenes------
-isStepFinished_create_video_4_scenes=false
+isStepFinished_create_video_4_scenes=true
 
 sceneTxtList=( ${scenes_txt_dir}/*.txt )
 picList=(  ${pic_dir}/*.png  )
@@ -35,14 +35,14 @@ fi
 
 #-create videos one by one
 # for txtPath in "${sceneTxtList[@]}" do  done
-for i in $(seq 1 1); do
+for i in $(seq 1 14); do
   #-- if the step is finished,skip... 
   if [ "$isStepFinished_create_video_4_scenes" != "false" ]; then    
     break 
   fi
 
   #-- do it... 
-  for j in $(seq 2 3); do
+  for j in $(seq 1 5); do
     fileBaseN=$i-$j
     echo "....${fileBaseN}"
 
@@ -78,8 +78,44 @@ if [ "${isStepFinished_merge_videos}" = "true" ]; then
   exit 0
 fi
 
+#- create video_list.txt
+videoList_path=${videos_dir}/video_list.txt
+rm ${videoList_path}
+
+for i in $(seq 1 14); do
+  for j in $(seq 1 5); do
+    fileBaseN=$i-$j
+    echo "....${fileBaseN}"
 
 
+    single_video=${videos_dir}/${fileBaseN}/outVideo0.mp4
+    if [ ! -f "${single_video}" ]; then
+      echo "....${single_video} not exist,go on to merge next video..."
+      continue
+    fi
+
+    ## remark: ffmpeg 的 concat 协议在默认情况下会拒绝带有绝对路径的文件，
+    #      所以这里不存${single_video}而存${fileBaseN}/outVideo0.mp4
+    echo "file '${fileBaseN}/outVideo0.mp4'" >> ${videoList_path}
+
+  done ## for j in $(seq 1 5); do
+done ## for i in $(seq 1 14); do
+
+#- merge videos into  ${finalVideo_path}
+if [ ! -f "${videoList_path}" ]; then
+  echo "....${videoList_path} not exist,exit..."
+  exit 1002
+fi
+
+if [ ! -s "$videoList_path" ]; then
+  echo "文件 $videoList_path 是空的,exit..."
+  exit 1002
+else
+  echo "文件 ${videoList_path} 不是空的，开始合并视频...."
+fi
+
+finalVideo_path=${videos_dir}/finalVideo.mp4
+ffmpeg -f concat -i ${videoList_path} -codec copy ${finalVideo_path}
 #-----------output end time
 echo "v2/gen-video.sh...startTime= ${startTm}"
 echo "v2/gen-video.sh...endTime= $(date)"
