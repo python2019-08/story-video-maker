@@ -1,15 +1,15 @@
 #!/bin/bash
 # 
- 
+startTm=$(date)   
 repo_dir=/home/abner/abner2/zdev/ai/av/a-story-video-maker/
 scenes_txt_dir=${repo_dir}/v2dat/01-huhua-xiaoshenyi/scenes_dir
 videos_dir=${repo_dir}/v2dat/01-huhua-xiaoshenyi/videos_dir
 VideoTitle="护花医"
 
-#----- get all "chapterNo-sceneNo".txt
-is_split_scenes__finished=true # 
+#----- get all "chapterNo-sceneNo".txt -------
+isStepFinished_split_scenes=true # 
 scenes_txt_file=${repo_dir}/v2dat/01-huhua-xiaoshenyi/scenes-txt.txt 
-if [ "$is_split_scenes__finished" = "false" ]; then
+if [ "$isStepFinished_split_scenes" = "false" ]; then
     if [ ! -d "${scenes_txt_dir}" ]; then
         mkdir -p ${scenes_txt_dir}
     fi
@@ -19,7 +19,9 @@ if [ "$is_split_scenes__finished" = "false" ]; then
             --out-dir ${scenes_txt_dir}
 fi            
 
-#-----------
+#-----------create_video_4_scenes------
+isStepFinished_create_video_4_scenes=false
+
 sceneTxtList=( ${scenes_txt_dir}/*.txt )
 picList=(  ${pic_dir}/*.png  )
 
@@ -32,11 +34,15 @@ if [ ! -d "${videos_dir}" ]; then
 fi
 
 #-create videos one by one
-# for txtPath in "${sceneTxtList[@]}" do done
+# for txtPath in "${sceneTxtList[@]}" do  done
+for i in $(seq 1 1); do
+  #-- if the step is finished,skip... 
+  if [ "$isStepFinished_create_video_4_scenes" != "false" ]; then    
+    break 
+  fi
 
-
-for i in $(seq 1 14); do
-  for j in $(seq 1 5); do
+  #-- do it... 
+  for j in $(seq 2 3); do
     fileBaseN=$i-$j
     echo "....${fileBaseN}"
 
@@ -66,4 +72,14 @@ for i in $(seq 1 14); do
   done  
 done
 
-  
+#-----------merge_videos------  
+isStepFinished_merge_videos=false
+if [ "${isStepFinished_merge_videos}" = "true" ]; then
+  exit 0
+fi
+
+
+
+#-----------output end time
+echo "v2/gen-video.sh...startTime= ${startTm}"
+echo "v2/gen-video.sh...endTime= $(date)"
