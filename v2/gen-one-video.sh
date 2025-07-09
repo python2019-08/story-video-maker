@@ -98,27 +98,17 @@ fi
  
 # +++++++++++ gen video +++++++++++
 echo "3.---------gen video--------------"
-# 输入文件相关信息
+
+echo "3.1---------resize_img--------------"
 # image_pattern="${outDir}/image%d.png"
-image_pattern=""
-bgImgList=("${outDir}/${inBgImageBaseName}.png"  
-               "${outDir}/${inBgImageBaseName}.jpeg"
-               "${outDir}"/${inBgImageBaseName}.jpg )
-for imgItem in "${bgImgList[@]}" 
-do
-  # echo "imgItem=${imgItem}"  
-  if [ -f "$imgItem" ]; then
-    image_pattern=${imgItem}  
-  fi
-done
+image_pattern=${inBgImageBaseName}
 echo "image_pattern=${image_pattern}"
-if [ -z "$image_pattern" ]; then
+
+if [ ! -f "$image_pattern" ]; then
     echo "cover image is not exist"
     exit 2015
 fi
   
-
-echo "3.1---------resize_img--------------"
 python ${resize_imgPy} --input ${image_pattern}  --output ${image_pattern}
 
 
