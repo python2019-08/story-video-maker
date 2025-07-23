@@ -21,8 +21,8 @@ conda activate paddleocr
 is_use_example_dat=false
 
 repo_dir=/home/abner/abner2/zdev/ai/av/a-story-video-maker/
-in_pic_dir=/home/abner/Downloads/17
-outTxt=/home/abner/Downloads/17/out.txt 
+in_pic_dir=/home/abner/Downloads/01
+outTxt=/home/abner/Downloads/01/out.txt 
 
 if [ "$is_use_example_dat" != "false" ]; then    
   #  use “ocr-text/in-img-example”
@@ -33,7 +33,7 @@ if [ "$is_use_example_dat" != "false" ]; then
 fi
 
 
-picList=(${in_pic_dir}/*.jpg)
+picList=(${in_pic_dir}/*.png)
 echo "picList=${picList[@]}" 
 
 for imgItem in "${picList[@]}" 

@@ -81,11 +81,16 @@ fi
 echo "2.1---------generate midFile_whisper_srt--------------"
 # "-osrt" can generate midFile_whisper_srt ,in which the sentence breaks well,
 # but **wrong letters** are also generated.
+# 
+# -ml 20  # 限制单条字幕最大20字符（根据需要调整数值）
+#      需配合--split-on-word可优化分词效果，避免单词 / 语义割裂
 whisper_cpp_rootDir=/mnt/disk2/abner/zdev/ai/av/whisper.cpp
 ${whisper_cpp_rootDir}/build/bin/whisper-cli  -l zh  \
         -m  ${whisper_cpp_rootDir}/models/ggml-medium.bin  \
         -f  ${midFile_wav} \
         --prompt  "以下是普通话的句子，这是一段会议记录。"\
+        -ml 20  \
+        --split-on-word true\
         -osrt > ${midFile_whisper_subtitles}
 
 if [ $? -eq 0 ]; then
@@ -158,12 +163,12 @@ fi
 
 # --------clean 
 echo "4---------clean midfiles--------------"
-rm  ${midFile_mp3} 
-rm  ${midFile_wav}
-rm  ${midFile_srt} 
-rm  ${midFile_srt1} 
-rm  ${midFile_whisper_srt}
-rm  ${midFile_whisper_subtitles}  
+# rm  ${midFile_mp3} 
+# rm  ${midFile_wav}
+# rm  ${midFile_srt} 
+# rm  ${midFile_srt1} 
+# rm  ${midFile_whisper_srt}
+# rm  ${midFile_whisper_subtitles}  
  
 
 # output end time

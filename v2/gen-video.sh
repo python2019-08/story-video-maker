@@ -1,15 +1,20 @@
 #!/bin/bash
 # 
 startTm=$(date)   
+# should-be-changed...
 repo_dir=/home/abner/abner2/zdev/ai/av/a-story-video-maker/
-# scripts
-scripts_dir=${repo_dir}/v2dat/01-huhua-xiaoshenyi/scripts_dir
-videos_dir=${repo_dir}/v2dat/01-huhua-xiaoshenyi/videos_dir
-VideoTitle="护花医"
+# should-be-changed...
+dat_root=${repo_dir}/v2dat/03
 
-#----- get all "chapterNo-sceneNo".txt -------
-isStepFinished_split_scenes=true # 
-scenes_txt_file=${repo_dir}/v2dat/01-huhua-xiaoshenyi/scenes-txt.txt 
+scripts_dir=${dat_root}/scripts_dir
+videos_dir=${dat_root}/videos_dir
+
+# should-be-changed...
+VideoTitle="科举，农家子的权臣之路-001"
+
+#----- step-01:get all "chapterNo-sceneNo".txt -------
+isStepFinished_split_scenes=true # skip this step
+scenes_txt_file=${dat_root}/scenes-txt.txt
 if [ "$isStepFinished_split_scenes" = "false" ]; then
     if [ ! -d "${scripts_dir}" ]; then
         mkdir -p ${scripts_dir}
@@ -20,13 +25,15 @@ if [ "$isStepFinished_split_scenes" = "false" ]; then
             --out-dir ${scripts_dir}
 fi            
 
-#-----------create_video_4_scenes------
-isStepFinished_create_video_4_scenes=true
+#-----------step-02:create_video_4_scenes------
+isStepFinished_create_video_4_scenes=false
 
 sceneTxtList=( ${scripts_dir}/*.txt )
+
+# should-be-changed... png? jpg?
 picList=(  ${pic_dir}/*.png  )
 
-pic_dir=${repo_dir}/v2dat/01-huhua-xiaoshenyi/pic
+pic_dir=${dat_root}/pic
 gen_one_video_script=${repo_dir}/v2/gen-one-video.sh
 
 #- if ${videos_dir} not exist, create it
@@ -36,14 +43,14 @@ fi
 
 #-create videos one by one
 # for txtPath in "${sceneTxtList[@]}" do  done
-for i in $(seq 1 14); do
+for i in $(seq 1 2); do
   #-- if the step is finished,skip... 
   if [ "$isStepFinished_create_video_4_scenes" != "false" ]; then    
     break 
   fi
 
   #-- do it... 
-  for j in $(seq 1 5); do
+  for j in $(seq 3 4); do
     fileBaseN=$i-$j
     echo "....${fileBaseN}"
 
@@ -73,7 +80,7 @@ for i in $(seq 1 14); do
   done  
 done
 
-#-----------merge_videos------  
+#-----------step-03:merge_videos------  
 isStepFinished_merge_videos=false
 if [ "${isStepFinished_merge_videos}" = "true" ]; then
   exit 0
@@ -117,6 +124,6 @@ fi
 
 finalVideo_path=${videos_dir}/finalVideo.mp4
 ffmpeg -f concat -i ${videoList_path} -codec copy ${finalVideo_path}
-#-----------output end time
+#-----------step-04:output end time
 echo "v2/gen-video.sh...startTime= ${startTm}"
 echo "v2/gen-video.sh...endTime= $(date)"
