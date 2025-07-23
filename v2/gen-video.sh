@@ -2,7 +2,8 @@
 # 
 startTm=$(date)   
 repo_dir=/home/abner/abner2/zdev/ai/av/a-story-video-maker/
-scenes_txt_dir=${repo_dir}/v2dat/01-huhua-xiaoshenyi/scenes_dir
+# scripts
+scripts_dir=${repo_dir}/v2dat/01-huhua-xiaoshenyi/scripts_dir
 videos_dir=${repo_dir}/v2dat/01-huhua-xiaoshenyi/videos_dir
 VideoTitle="护花医"
 
@@ -10,19 +11,19 @@ VideoTitle="护花医"
 isStepFinished_split_scenes=true # 
 scenes_txt_file=${repo_dir}/v2dat/01-huhua-xiaoshenyi/scenes-txt.txt 
 if [ "$isStepFinished_split_scenes" = "false" ]; then
-    if [ ! -d "${scenes_txt_dir}" ]; then
-        mkdir -p ${scenes_txt_dir}
+    if [ ! -d "${scripts_dir}" ]; then
+        mkdir -p ${scripts_dir}
     fi
 
     python ${repo_dir}/v2/split_scenes.py \
             --in-scenes-txt ${scenes_txt_file}\
-            --out-dir ${scenes_txt_dir}
+            --out-dir ${scripts_dir}
 fi            
 
 #-----------create_video_4_scenes------
 isStepFinished_create_video_4_scenes=true
 
-sceneTxtList=( ${scenes_txt_dir}/*.txt )
+sceneTxtList=( ${scripts_dir}/*.txt )
 picList=(  ${pic_dir}/*.png  )
 
 pic_dir=${repo_dir}/v2dat/01-huhua-xiaoshenyi/pic
@@ -47,7 +48,7 @@ for i in $(seq 1 14); do
     echo "....${fileBaseN}"
 
 
-    txtPath=${scenes_txt_dir}/${fileBaseN}.txt
+    txtPath=${scripts_dir}/${fileBaseN}.txt
     if [ ! -f "$txtPath" ]; then 
       continue
     fi
@@ -78,7 +79,7 @@ if [ "${isStepFinished_merge_videos}" = "true" ]; then
   exit 0
 fi
 
-#- create video_list.txt
+#--- create video_list.txt
 videoList_path=${videos_dir}/video_list.txt
 rm ${videoList_path}
 
@@ -101,7 +102,7 @@ for i in $(seq 1 14); do
   done ## for j in $(seq 1 5); do
 done ## for i in $(seq 1 14); do
 
-#- merge videos into  ${finalVideo_path}
+#--- merge videos into  ${finalVideo_path}
 if [ ! -f "${videoList_path}" ]; then
   echo "....${videoList_path} not exist,exit..."
   exit 1002
