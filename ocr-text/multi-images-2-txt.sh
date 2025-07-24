@@ -24,7 +24,8 @@ repo_dir=/home/abner/abner2/zdev/ai/av/a-story-video-maker/
 in_pic_dir=/home/abner/Downloads/01
 outTxt=/home/abner/Downloads/01/out.txt 
 
-if [ "$is_use_example_dat" != "false" ]; then    
+if [ "$is_use_example_dat" != "false" ]; then  
+  echo "is_use_example_dat != false............."  
   #  use “ocr-text/in-img-example”
   repo_dir=/home/abner/abner2/zdev/ai/av/a-story-video-maker/
   in_pic_dir=${repo_dir}/ocr-text/in-img-example

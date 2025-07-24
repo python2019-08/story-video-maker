@@ -10,7 +10,7 @@ scripts_dir=${dat_root}/scripts_dir
 videos_dir=${dat_root}/videos_dir
 
 # should-be-changed...
-VideoTitle="科举，农家子的权臣之路-001"
+VideoTitle="科举，农家子的权臣之路-02"
 
 #----- step-01:get all "chapterNo-sceneNo".txt -------
 isStepFinished_split_scenes=true # skip this step
@@ -43,14 +43,14 @@ fi
 
 #-create videos one by one
 # for txtPath in "${sceneTxtList[@]}" do  done
-for i in $(seq 1 2); do
+for i in $(seq 2 2); do
   #-- if the step is finished,skip... 
   if [ "$isStepFinished_create_video_4_scenes" != "false" ]; then    
     break 
   fi
 
   #-- do it... 
-  for j in $(seq 3 4); do
+  for j in $(seq 1 8); do
     fileBaseN=$i-$j
     echo "....${fileBaseN}"
 
@@ -90,8 +90,8 @@ fi
 videoList_path=${videos_dir}/video_list.txt
 rm ${videoList_path}
 
-for i in $(seq 1 14); do
-  for j in $(seq 1 5); do
+for i in $(seq 2 2); do
+  for j in $(seq 1 8); do
     fileBaseN=$i-$j
     echo "....${fileBaseN}"
 

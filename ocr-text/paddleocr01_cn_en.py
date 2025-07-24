@@ -180,11 +180,13 @@ if __name__ == "__main__":
     is_use_argparse = True
 
     if is_use_argparse :
+        print("................in ocr-text/paddleocr01_cn_en.py: is_use_argparse =True.\n")
         main()
     else:
+        print("................in ocr-text/paddleocr01_cn_en.py: is_use_argparse =False.\n")
         image_path = "/home/abner/Pictures/1.png"  # 替换为你的图像路径
         output_path = "/home/abner/Pictures/output.jpg"  # 替换为输出图像的路径
         outputTxt_path="./out.txt"
         
-        results = recognize_text(image_path, outputTxt_path, output_path)    
+        results = recognize_text(image_path,  output_path, outputTxt_path)    
 
