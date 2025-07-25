@@ -1,7 +1,7 @@
 #!/bin/bash
 # 
 # +++++++ handle input parameters ++++++++
-# ./gen-one-video.sh  <inTxt>   <inVideoTitle> <inBgImageBaseName> <outDir>
+# ./gen-one-video.sh  <inTxt>   <inVideoTitle> <inBgMediaBaseName> <outDir>
 # ./gen-one-video.sh  ${outDir}/story.txt
 startTime=$(date)  
 echo "-------------------$@"
@@ -16,17 +16,17 @@ if [ $# -lt 4 ]; then
 fi 
 # inTxt=${outDir}/story.txt
 # inVideoTitle="屏幕背后的窥影"
-# inBgImageBaseName=cover.png
+# inBgMediaBaseName=cover.png
 inTxt=$1 
 inVideoTitle=$2
-inBgImageBaseName=$3
+inBgMediaBaseName=$3
 outDir=$4
 echo "outDir=${outDir}" 
 
 # python code path
-py_rootDir=/home/abner/abner2/zdev/ai/av/a-story-video-maker/v1
-restore_srt_punctuationPy=${py_rootDir}/edge_restore_srt_punctuation.py
-resize_imgPy=${py_rootDir}/resize_img.py
+repo_rootDir=/home/abner/abner2/zdev/ai/av/a-story-video-maker
+restore_srt_punctuationPy=${repo_rootDir}/v1/edge_restore_srt_punctuation.py
+resize_imgPy=${repo_rootDir}/v1/resize_img.py
  
  
 midFile_mp3=${outDir}/story_male_cn0.mp3
@@ -114,16 +114,23 @@ echo "3.---------gen video--------------"
 
 echo "3.1---------resize_img--------------"
 # image_pattern="${outDir}/image%d.png"
-image_pattern=${inBgImageBaseName}
+image_pattern=${inBgMediaBaseName}
 echo "image_pattern=${image_pattern}"
 
 if [ ! -f "$image_pattern" ]; then
     echo "cover image is not exist"
     exit 2015
 fi
-  
-python ${resize_imgPy} --input ${image_pattern}  --output ${image_pattern}
 
+# 引入函数库,
+source ${repo_rootDir}/v2/common_functions.sh
+# call get_extension function
+imgFileExt=$(get_extension "$image_pattern")
+
+# is not pic but video, resize_imgPy 
+if [ ${imgFileExt} != "mp4" ]; then
+    python ${resize_imgPy} --input ${image_pattern}  --output ${image_pattern}
+fi
 
 # 生成视频
 # ++++++++++++++++++++multiLine-comments....start
@@ -146,10 +153,7 @@ ffmpeg -framerate 1/10 -i "$image_pattern" -i "$midFile_mp3" -i "$midFile_srt1" 
   -c:v libx264 -pix_fmt yuv420p -c:a aac -b:a 192k \
   -vf subtitles="$midFile_srt1" -shortest "$outVideo0"
 fi
-# ++++++++++++++++++++multiLine-comments....end 
 
-
-echo "3.2---------gen outVideo0--------------"
 ffmpeg -loop 1 -i "$image_pattern" -i "$midFile_mp3" -i "$videoSrt" \
   -c:v libx264 -s 1920x1080 -pix_fmt yuv420p -c:a aac -b:a 192k \
   -vf "scale=1920:1080:\
@@ -161,6 +165,38 @@ ffmpeg -loop 1 -i "$image_pattern" -i "$midFile_mp3" -i "$videoSrt" \
        subtitles=$videoSrt:\
        force_style='Fontname=SimHei,Fontsize=28,PrimaryColour=&HFFFFFF&,Outline=2,Shadow=1.5'" \
   -shortest "$outVideo0"  
+# ++++++++++++++++++++multiLine-comments....end 
+
+echo "3.2---------gen outVideo0--------------"
+if [ ${imgFileExt} != "mp4" ]; then
+    ffmpeg -loop 1 -i "$image_pattern" -i "$midFile_mp3" -i "$videoSrt" \
+    -c:v libx264 -s 1920x1080 -pix_fmt yuv420p -c:a aac -b:a 192k \
+    -vf "scale=1920:1080:\
+        force_original_aspect_ratio=decrease,\
+        pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,\
+        drawtext=fontsize=100:\
+                fontfile=FreeSerif.ttf:text='${inVideoTitle}':\
+                fontcolor=green:box=1:boxcolor=yellow,\
+        subtitles=$videoSrt:\
+        force_style='Fontname=SimHei,Fontsize=28,PrimaryColour=&HFFFFFF&,Outline=2,Shadow=1.5'" \
+    -shortest "$outVideo0"  
+else
+    # 计算音频文件的时长（秒）
+    audio_duration=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$midFile_mp3")
+
+    # 生成视频：视频延长至音频时长（最后一帧静止）
+    ffmpeg -i "$image_pattern" \
+        -i "$midFile_mp3" \
+        -vf "subtitles=$videoSrt, \
+                scale=1920:1080:force_original_aspect_ratio=decrease, \
+                pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1, \
+                drawtext=fontsize=100:fontfile=FreeSerif.ttf:\
+                text='${inVideoTitle}':fontcolor=green:box=1:boxcolor=yellow" \
+        -c:v libx264 -pix_fmt yuv420p \
+        -c:a aac -b:a 192k \
+        -t "$audio_duration" \
+        "$outVideo0"  
+fi
 
 # 检查命令执行结果
 if [ $? -eq 0 ]; then
