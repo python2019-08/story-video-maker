@@ -19,23 +19,30 @@ conda activate paddleocr
 
 #---------------------------------
 is_use_example_dat=false
-
+## changable var 01/02: repo_dir
 repo_dir=/home/abner/abner2/zdev/ai/av/a-story-video-maker/
-in_pic_dir=/home/abner/Downloads/01
-outTxt=/home/abner/Downloads/01/out.txt 
 
+## changable var 02/02: in_pic_dir
+in_pic_dir=/home/abner/Downloads/kj
 if [ "$is_use_example_dat" != "false" ]; then  
   echo "is_use_example_dat != false............."  
   #  use “ocr-text/in-img-example”
-  repo_dir=/home/abner/abner2/zdev/ai/av/a-story-video-maker/
   in_pic_dir=${repo_dir}/ocr-text/in-img-example
-  outTxt=${repo_dir}/ocr-text/in-img-example/out.txt
 # else
 fi
 
+outTxt=${in_pic_dir}/out.txt
 
-picList=(${in_pic_dir}/*.png)
-echo "picList=${picList[@]}" 
+# --------------------------
+shopt -s nullglob  # 如果没有匹配文件，返回空数组
+picList=( ${in_pic_dir}/*.png )
+if [ ${#picList[@]} -eq 0 ]; then
+    echo "no png in ${in_pic_dir}, try to search jpg in ${in_pic_dir}"
+    picList=( ${in_pic_dir}/*.jpg )
+fi
+shopt -u nullglob  # 恢复默认
+echo "...picList=${picList[@]}" 
+
 
 for imgItem in "${picList[@]}" 
 do
